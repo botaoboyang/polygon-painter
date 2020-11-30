@@ -5,8 +5,10 @@
 <script>
 import { mapState } from 'vuex'
 
-const SCALE_SPEED = 0.1
-const ZOOM_SPEED = 0.002
+const MOVE_SPEED = 0.2
+
+const MIN_SCALE = 0.001
+const SCALE_SPEED = 1.002
 
 export default {
 
@@ -35,14 +37,18 @@ export default {
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
     this.ctx = canvas.getContext("2d")
+    this.ctx.textAlign = "left"
+    this.ctx.textBaseline = "bottom"
+    this.ctx.direction = "ltr"
 
-    this.translateX = Math.floor(window.innerWidth / 2)
+    this.translateX = Math.floor(window.innerWidth / 2) + 150
     this.translateY = Math.floor(window.innerHeight / 2)
     this.scale = 1
 
     window.onresize = this.handleResize
     window.onkeydown = this.handleKeyDown
     window.onkeyup = this.handleKeyUp
+    window.onscroll = this.handleScroll
 
     window.requestAnimationFrame(this.render)
   },
@@ -77,18 +83,25 @@ export default {
       else if(e.code === "ArrowDown") this.controls.zoomOut = false
     },
 
+    handleScroll(e) {
+      console.log(e)
+    },
+
     handleResize() {
       this.canvas.width = window.innerWidth
       this.canvas.height = window.innerHeight
     },
 
     handleControls(elapsed) {
-      if (this.controls.up) this.translateY += SCALE_SPEED * elapsed
-      if (this.controls.down) this.translateY -= SCALE_SPEED * elapsed
-      if (this.controls.left) this.translateX += SCALE_SPEED * elapsed
-      if (this.controls.right) this.translateX -= SCALE_SPEED * elapsed
-      if (this.controls.zoomIn) this.scale += ZOOM_SPEED * elapsed
-      if (this.controls.zoomOut) this.scale -= ZOOM_SPEED * elapsed
+      if (this.controls.up) this.translateY += MOVE_SPEED * elapsed
+      if (this.controls.down) this.translateY -= MOVE_SPEED * elapsed
+      if (this.controls.left) this.translateX += MOVE_SPEED * elapsed
+      if (this.controls.right) this.translateX -= MOVE_SPEED * elapsed
+      if (this.controls.zoomIn) this.scale *= Math.pow(SCALE_SPEED, elapsed)
+      if (this.controls.zoomOut) this.scale /= Math.pow(SCALE_SPEED, elapsed)
+
+      if (this.scale < MIN_SCALE) this.scale = MIN_SCALE
+
     },
 
     render(timestamp) {
@@ -102,30 +115,64 @@ export default {
 
     renderBackground() {
       this.ctx.setTransform(1, 0, 0, 1, 0, 0)
-      this.ctx.fillStyle = "#000000"
+      this.ctx.fillStyle = "black"
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     },
     
     renderPolygons() {
-      this.ctx.setTransform(this.scale, 0, 0, this.scale, this.translateX, this.translateY)
-      for (const poly of this.polygons) {
-        if (poly.isValid) this.renderPolygon(poly)
+      this.ctx.setTransform(this.scale, 0, 0, -this.scale, this.translateX, this.translateY)
+      this.ctx.lineWidth = 1 / this.scale
+
+      const validPolygons = this.polygons.filter(p => p.isValid)
+
+      for (const poly of validPolygons) {
+        this.ctx.strokeStyle = poly.color
+        try{
+          this.renderPolygon(poly.data)
+        } catch {
+          poly.isValid = false
+        }
       }
+
+      this.ctx.setTransform(this.scale, 0, 0, this.scale, this.translateX, this.translateY)
+      this.ctx.font = "10px serif"
+      this.ctx.fillStyle = "white"
+      for (const poly of validPolygons) {
+        this.renderText(poly.data)
+      }
+
     },
 
     renderPolygon(polygon) {
-      const points = polygon.data
+      if (Array.isArray(polygon[0])) {
+        for (const poly of polygon) {
+          this.renderPolygon(poly);
+        }
+        return;
+      }
+
       this.ctx.beginPath()
-      this.ctx.strokeStyle = polygon.color
-      this.ctx.lineWidth = 1 / this.scale
       
-      this.ctx.moveTo(points[0].x, points[0].y)
-      for (let i=1 ; i<points.length ; i++) {
-        this.ctx.lineTo(points[i].x, points[i].y)
+      this.ctx.moveTo(polygon[0].x, polygon[0].y)
+      for (let i=1 ; i<polygon.length ; i++) {
+        this.ctx.lineTo(polygon[i].x, polygon[i].y)
       }
       this.ctx.closePath()
 
       this.ctx.stroke()
+    },
+
+    renderText(polygon) {
+      if (Array.isArray(polygon[0])) {
+        for (const poly of polygon) {
+          this.renderText(poly);
+        }
+        return;
+      }
+
+      for (let i=0 ; i<polygon.length ; i++) {
+        this.ctx.fillText(i, polygon[i].x + 10 / this.scale, -polygon[i].y - 5 / this.scale)
+      }
     }
   
   }

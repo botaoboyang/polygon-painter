@@ -1,6 +1,7 @@
 <template>
   <div class="left-bar">
     <button @click="addRandomPolygon">随机</button>
+    <button @click="addRandomPolygonList">随机2</button>
     <button @click="clearPolygons">清除</button>
     <div>
       <input v-model="newPolygonJSON"/>
@@ -33,28 +34,33 @@ export default {
   methods: {
 
     addPolygon() {
-      const newPolygon = { json: this.newPolygonJSON }
+      const newPolygon = { 
+        json: this.newPolygonJSON,
+        color: randomColor()
+      }
       this.$store.commit("addPolygon", newPolygon)
       this.newPolygonJSON = ""
     },
 
+    addRandomPolygonList() {
+      const polygonList = [
+        randomPolygon(-200, -200),
+        randomPolygon(-200, 200),
+        randomPolygon(200, -200),
+        randomPolygon(200, 200),
+      ]
+      const newPolygon = {
+        json: JSON.stringify(polygonList),
+        color: randomColor()
+      };
+      this.$store.commit("addPolygon", newPolygon);
+    },
+
     addRandomPolygon() {
-      const points = [{
-        x: Math.floor(Math.random() * 200),
-        y: -Math.floor(Math.random() * 200)
-      },
-      {
-        x: -Math.floor(Math.random() * 200),
-        y: -Math.floor(Math.random() * 200)
-      },
-      {
-        x: -Math.floor(Math.random() * 200),
-        y: Math.floor(Math.random() * 200)
-      },
-      {
-        x: Math.floor(Math.random() * 200),
-        y: Math.floor(Math.random() * 200)
-      }]
+      const points = randomPolygon(
+        Math.floor(Math.random() * 400 - 200), 
+        Math.floor(Math.random() * 400 - 200)
+        );
 
       const newPolygon = { 
         json: JSON.stringify(points),
@@ -81,6 +87,25 @@ export default {
     },
 
   }
+}
+
+function randomPolygon(offsetX, offsetY) {
+  return [{
+    x: Math.floor(Math.random() * 200) + offsetX,
+    y: -Math.floor(Math.random() * 200) + offsetY
+  },
+  {
+    x: -Math.floor(Math.random() * 200) + offsetX,
+    y: -Math.floor(Math.random() * 200) + offsetY
+  },
+  {
+    x: -Math.floor(Math.random() * 200) + offsetX,
+    y: Math.floor(Math.random() * 200) + offsetY
+  },
+  {
+    x: Math.floor(Math.random() * 200) + offsetX,
+    y: Math.floor(Math.random() * 200) + offsetY
+  }]
 }
 
 function randomColor() {
