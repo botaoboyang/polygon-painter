@@ -1,21 +1,24 @@
 <template>
   <div id="app">
-    <LeftBar/>
-    <Content/>
+    <LeftBar :polygons.sync="polygons"/>
+    <Content :polygons="polygons"/>
   </div>
 </template>
 
 <script>
 import LeftBar from "./LeftBar"
 import Content from "./Content"
-import store from "./store"
 
 export default {
   components: {
     LeftBar,
     Content,
+  }, 
+  data () {
+    return {
+      polygons: []
+    }
   },
-  store,
 }
 </script>
 

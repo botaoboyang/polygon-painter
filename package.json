@@ -5,7 +5,6 @@
   "author": "hanbotao",
   "scripts": {
     "build": "webpack --mode=production",
-    "watch": "webpack --watch",
     "serve": "webpack serve"
   },
   "devDependencies": {

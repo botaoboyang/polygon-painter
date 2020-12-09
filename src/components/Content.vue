@@ -3,22 +3,29 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-
-const MOVE_SPEED = 0.2
+const MOVE_SPEED = 0.3
 
 const MIN_SCALE = 0.001
 const SCALE_SPEED = 1.002
 
 export default {
 
+  name: "Content",
+
+  props: {
+    polygons: Array,
+  },
+
   data: function() {
     return {
       lastRenderTime: 0,
 
+      centerX: 0,
+      centerY: 0,
+
       translateX: 0,
       translateY: 0,
-      scale: 1,
+      scale: 0.5,
 
       controls: {
         left: false,
@@ -27,6 +34,9 @@ export default {
         down: false,
         zoomIn: false,
         zoomOut: false,
+
+        mousedownX: 0,
+        mousedownY: 0
       },
 
     }
@@ -41,26 +51,17 @@ export default {
     this.ctx.textBaseline = "bottom"
     this.ctx.direction = "ltr"
 
-    this.translateX = Math.floor(window.innerWidth / 2) + 150
-    this.translateY = Math.floor(window.innerHeight / 2)
-    this.scale = 1
+    this.centerX = Math.floor(window.innerWidth / 2) + 150
+    this.centerY = Math.floor(window.innerHeight / 2)
 
     window.onresize = this.handleResize
     window.onkeydown = this.handleKeyDown
     window.onkeyup = this.handleKeyUp
-    window.onscroll = this.handleScroll
+    window.addEventListener("wheel", this.handleScroll)
+    canvas.addEventListener("mousedown", this.handleMousedown)
+    canvas.addEventListener("mousemove", this.handleMousemove)
 
     window.requestAnimationFrame(this.render)
-  },
-
-  beforeDestroy: function() {
-    window.onresize = null
-    window.onkeydown = null
-    window.onkeyup = null
-  },
-
-  computed: {
-    ...mapState(['polygons']),
   },
 
   methods: {
@@ -83,8 +84,20 @@ export default {
       else if(e.code === "ArrowDown") this.controls.zoomOut = false
     },
 
+    handleMousedown(e) {
+      
+    },
+
+    handleMousemove(e) {
+
+    },
+
+    handleMouseleave(e) {
+
+    },
+
     handleScroll(e) {
-      console.log(e)
+      this.scale *= Math.pow(SCALE_SPEED, e.deltaY)
     },
 
     handleResize() {
@@ -120,10 +133,13 @@ export default {
     },
     
     renderPolygons() {
-      this.ctx.setTransform(this.scale, 0, 0, -this.scale, this.translateX, this.translateY)
+      this.ctx.setTransform(this.scale, 0, 0, -this.scale, 
+        this.translateX * this.scale + this.centerX, 
+        this.translateY * this.scale + this.centerY
+        )
       this.ctx.lineWidth = 1 / this.scale
 
-      const validPolygons = this.polygons.filter(p => p.isValid)
+      const validPolygons = this.polygons.filter(p => p.isValid && p.isVisible)
 
       for (const poly of validPolygons) {
         this.ctx.strokeStyle = poly.color
@@ -134,8 +150,11 @@ export default {
         }
       }
 
-      this.ctx.setTransform(this.scale, 0, 0, this.scale, this.translateX, this.translateY)
-      this.ctx.font = "10px serif"
+      this.ctx.setTransform(this.scale, 0, 0, this.scale, 
+        this.translateX * this.scale + this.centerX, 
+        this.translateY * this.scale + this.centerY
+      )
+      this.ctx.font = "30px serif"
       this.ctx.fillStyle = "white"
       for (const poly of validPolygons) {
         this.renderText(poly.data)
@@ -171,7 +190,7 @@ export default {
       }
 
       for (let i=0 ; i<polygon.length ; i++) {
-        this.ctx.fillText(i, polygon[i].x + 10 / this.scale, -polygon[i].y - 5 / this.scale)
+        this.ctx.fillText(i, polygon[i].x + 10, - polygon[i].y - 10)
       }
     }
   

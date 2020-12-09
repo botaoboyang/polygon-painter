@@ -1,89 +1,56 @@
 <template>
   <div class="left-bar">
     <button @click="addRandomPolygon">随机</button>
-    <button @click="addRandomPolygonList">随机2</button>
     <button @click="clearPolygons">清除</button>
     <div>
       <input v-model="newPolygonJSON"/>
       <button @click="addPolygon">添加</button>
     </div>
     <div v-for="poly in polygons" :key="poly.id">
-      <input :class="{invalid: !poly.isValid}" v-model="poly.json" @input="handleUpdate(poly)"/>
+      <input :class="{invalid: !poly.isValid}" type="text" v-model="poly.json"/>
       <button @click="handleDelete(poly)">删除</button>
-      <button @click="changeColor(poly)">换色</button>
+      <button @click="poly.changeColor()">换色</button>
+      <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import Polygon from '../Polygon';
 
 export default {
 
+  name: "LeftBar",
+
+  props: {
+    polygons: Array,
+  },
+
   data: function () {
     return {
-      polyJson: "",
       newPolygonJSON: "",
     }
   },
 
-  computed: {
-    ...mapState(['polygons'])
-  },
-
   methods: {
 
-    addPolygon() {
-      const newPolygon = { 
-        json: this.newPolygonJSON,
-        color: randomColor()
-      }
-      this.$store.commit("addPolygon", newPolygon)
-      this.newPolygonJSON = ""
-    },
-
-    addRandomPolygonList() {
-      const polygonList = [
-        randomPolygon(-200, -200),
-        randomPolygon(-200, 200),
-        randomPolygon(200, -200),
-        randomPolygon(200, 200),
-      ]
-      const newPolygon = {
-        json: JSON.stringify(polygonList),
-        color: randomColor()
-      };
-      this.$store.commit("addPolygon", newPolygon);
-    },
-
     addRandomPolygon() {
-      const points = randomPolygon(
-        Math.floor(Math.random() * 400 - 200), 
-        Math.floor(Math.random() * 400 - 200)
-        );
-
-      const newPolygon = { 
-        json: JSON.stringify(points),
-        color: randomColor()
-      }
-
-      this.$store.commit("addPolygon", newPolygon)
+      const newPolygon = Polygon.randomPolygon();
+      this.polygons.push(newPolygon);
     },
 
-    handleUpdate(poly) {
-      this.$store.commit("updatePolygon", poly)
+    addPolygon() {
+      const newPolygon = new Polygon(this.newPolygonJSON);
+      this.polygons.push(newPolygon);
+      this.newPolygonJSON = "";
     },
 
     handleDelete(poly) {
-      this.$store.commit("popPolygon", poly.id)
-    },
-
-    changeColor(poly) {
-      poly.color = randomColor();
+      this.$emit('update:polygons', this.polygons.filter(p => p.id !== poly.id))
     },
 
     clearPolygons() {
-      this.$store.commit("clearPolygons")
+      this.$emit('update:polygons', [])
     },
 
   }
