@@ -15,6 +15,7 @@ class Polygon {
     this.color = randomColor();
     this.isValid = true;
     this.isVisible = true;
+    this.isFocus = false;
     this.json = json;
   }
 

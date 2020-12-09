@@ -137,12 +137,12 @@ export default {
         this.translateX * this.scale + this.centerX, 
         this.translateY * this.scale + this.centerY
         )
-      this.ctx.lineWidth = 1 / this.scale
 
       const validPolygons = this.polygons.filter(p => p.isValid && p.isVisible)
 
       for (const poly of validPolygons) {
         this.ctx.strokeStyle = poly.color
+        this.ctx.lineWidth = (poly.isFocus ? 2 : 1) / this.scale;
         try{
           this.renderPolygon(poly.data)
         } catch {
@@ -154,12 +154,14 @@ export default {
         this.translateX * this.scale + this.centerX, 
         this.translateY * this.scale + this.centerY
       )
-      this.ctx.font = "30px serif"
-      this.ctx.fillStyle = "white"
-      for (const poly of validPolygons) {
-        this.renderText(poly.data)
-      }
 
+      const focusPolygon = validPolygons.find(p => p.isFocus)
+      if (focusPolygon) {
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "30px serif";
+        this.renderText(focusPolygon.data)
+      }
+  
     },
 
     renderPolygon(polygon) {

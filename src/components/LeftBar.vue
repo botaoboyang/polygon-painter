@@ -7,10 +7,10 @@
       <button @click="addPolygon">添加</button>
     </div>
     <div v-for="poly in polygons" :key="poly.id">
-      <input :class="{invalid: !poly.isValid}" type="text" v-model="poly.json"/>
+      <input @focus="focus(poly)" :class="{invalid: !poly.isValid}" type="text" v-model="poly.json"/>
       <button @click="handleDelete(poly)">删除</button>
-      <button @click="poly.changeColor()">换色</button>
-      <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
+      <button @focus="focus(poly)" @click="poly.changeColor()">换色</button>
+      <button @focus="focus(poly)" @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
     </div>
   </div>
 </template>
@@ -34,15 +34,22 @@ export default {
 
   methods: {
 
+    focus(poly) {
+      this.polygons.forEach(p => p.isFocus = false);
+      poly.isFocus = true;
+    },
+
     addRandomPolygon() {
       const newPolygon = Polygon.randomPolygon();
       this.polygons.push(newPolygon);
+      this.focus(newPolygon);
     },
 
     addPolygon() {
       const newPolygon = new Polygon(this.newPolygonJSON);
       this.polygons.push(newPolygon);
       this.newPolygonJSON = "";
+      this.focus(newPolygon);
     },
 
     handleDelete(poly) {
