@@ -1,12 +1,12 @@
 <template>
   <div class="left-bar">
-    <button @click="addRandomPolygon">随机</button>
-    <button @click="clearPolygons">清除</button>
-    <div>
+    <div class="item">
       <input v-model="newPolygonJSON"/>
       <button @click="addPolygon">添加</button>
+      <button @click="addRandomPolygon">随机</button>
+      <button @click="clearPolygons">清除</button>
     </div>
-    <div v-for="poly in polygons" :key="poly.id">
+    <div class="item" v-for="poly in polygons" :key="poly.id">
       <input @focus="focus(poly)" :class="{invalid: !poly.isValid}" type="text" v-model="poly.json"/>
       <button @click="handleDelete(poly)">删除</button>
       <button @focus="focus(poly)" @click="poly.changeColor()">换色</button>
@@ -28,7 +28,7 @@ export default {
 
   data: function () {
     return {
-      newPolygonJSON: "",
+      newPolygonJSON: ""
     }
   },
 
@@ -98,11 +98,18 @@ function randomColor() {
 
 .left-bar {
   background-color: white;
-  width: 300px;
   height: 100%;
   position: absolute;
   box-shadow: 4px 0 6px black;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 20px;
 }
 
 .invalid {

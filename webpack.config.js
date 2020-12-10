@@ -1,7 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack'); 
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const path = require('path');
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   mode: 'development',
@@ -24,6 +23,10 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader'
+      },
+      {
+        test: /\.(svg|png|jpg|gif)/,
+        loader: 'file-loader'
       },
       {
         test: /\.css$/,

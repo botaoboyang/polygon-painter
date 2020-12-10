@@ -57,7 +57,7 @@ export default {
     window.onresize = this.handleResize
     window.onkeydown = this.handleKeyDown
     window.onkeyup = this.handleKeyUp
-    window.addEventListener("wheel", this.handleScroll)
+    canvas.addEventListener("wheel", this.handleScroll)
     canvas.addEventListener("mousedown", this.handleMousedown)
     canvas.addEventListener("mousemove", this.handleMousemove)
 
