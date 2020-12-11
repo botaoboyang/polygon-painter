@@ -35,6 +35,7 @@ export default {
         zoomIn: false,
         zoomOut: false,
 
+        mousedown: false,
         mousedownX: 0,
         mousedownY: 0
       },
@@ -60,6 +61,7 @@ export default {
     canvas.addEventListener("wheel", this.handleScroll)
     canvas.addEventListener("mousedown", this.handleMousedown)
     canvas.addEventListener("mousemove", this.handleMousemove)
+    window.addEventListener("mouseup", this.handleMouseup)
 
     window.requestAnimationFrame(this.render)
   },
@@ -85,15 +87,31 @@ export default {
     },
 
     handleMousedown(e) {
-      
+      this.controls.mousedown = true;
+      const {clientX: x, clientY: y} = e;
+
+      this.controls.mousedownX = x;
+      this.controls.mousedownY = y;
+
     },
 
     handleMousemove(e) {
+      if (!this.controls.mousedown) return;
+      const {clientX: x, clientY: y} = e;
+
+      const offsetX = x - this.controls.mousedownX;
+      const offsetY = y - this.controls.mousedownY;
+
+      this.translateX += offsetX / this.scale;
+      this.translateY += offsetY / this.scale;
+
+      this.controls.mousedownX = x;
+      this.controls.mousedownY = y;
 
     },
 
-    handleMouseleave(e) {
-
+    handleMouseup(e) {
+      this.controls.mousedown = false;
     },
 
     handleScroll(e) {
