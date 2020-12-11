@@ -97,7 +97,7 @@ export default {
     },
 
     handleScroll(e) {
-      this.scale *= Math.pow(SCALE_SPEED, e.deltaY)
+      this.scale /= Math.pow(SCALE_SPEED, e.deltaY)
     },
 
     handleResize() {
