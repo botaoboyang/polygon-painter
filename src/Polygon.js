@@ -26,7 +26,7 @@ class Polygon {
   set json(v) {
     this._json = v
     try {
-      this.data = JSON.parse(v);
+      this.data = JSON.parse(v.toLowerCase());
       this.isValid = true;
     } catch {
       this.isValid = false;
