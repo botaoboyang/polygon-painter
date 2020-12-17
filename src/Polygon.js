@@ -76,7 +76,7 @@ function randomColor() {
     r = Math.floor(Math.random() * 256);
     g = Math.floor(Math.random() * 256);
     b = Math.floor(Math.random() * 256);
-  } while (r + g + b < 100);
+  } while (r + g + b < 200);
   return `rgb(${r}, ${g}, ${b})`;
 }
 

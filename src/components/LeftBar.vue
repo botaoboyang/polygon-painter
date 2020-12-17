@@ -13,6 +13,7 @@
       v-for="poly in polygons"
       :key="poly.id"
       :class="{isFocus: poly.isFocus}"
+      :style="{backgroundColor: poly.isVisible ? poly.color : 'white'}"
       @mouseenter="focus(poly)"
       >
       <input v-model="poly.name" />
@@ -44,12 +45,17 @@ export default {
   computed: {
     isValid () {
       return Polygon.isValidJson(this.newPolygonJSON)
-    }
+    },
   },
 
   methods: {
 
+    polyStyle (poly) {
+      return {backgroundColor: poly.color}
+    },
+
     focus(poly) {
+      if (!poly.isVisible) return
       this.polygons.forEach(p => p.isFocus = false);
       poly.isFocus = true;
     },
@@ -108,13 +114,24 @@ export default {
 .item {
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: flex-end;
   align-items: center;
-  height: 40px;
+  height: 50px;
+}
+
+.item.isFocus::before {
+  background-color: yellow;
+  height: 50px;
+  width: 10px;
+  content: "";
+  position: absolute;
 }
 
 .item>:first-child {
   margin-left: 20px;
+}
+.item>:nth-child(n) {
+  margin-left: 10px;
 }
 .item>:last-child {
   margin-right: 20px;
@@ -122,14 +139,7 @@ export default {
 
 .item>input {
   border: none;
+  background-color: rgba(0, 0, 0, 0);
 }
-
-.item.isFocus {
-  background-color: #eeeeee;
-}
-.item.isFocus>input {
-  background-color: #eeeeee;
-}
-
 
 </style>
