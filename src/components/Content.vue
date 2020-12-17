@@ -124,10 +124,10 @@ export default {
     },
 
     handleControls(elapsed) {
-      if (this.controls.up) this.translateY += MOVE_SPEED * elapsed
-      if (this.controls.down) this.translateY -= MOVE_SPEED * elapsed
-      if (this.controls.left) this.translateX += MOVE_SPEED * elapsed
-      if (this.controls.right) this.translateX -= MOVE_SPEED * elapsed
+      if (this.controls.up) this.translateY += MOVE_SPEED / this.scale * elapsed
+      if (this.controls.down) this.translateY -= MOVE_SPEED / this.scale * elapsed
+      if (this.controls.left) this.translateX += MOVE_SPEED / this.scale * elapsed
+      if (this.controls.right) this.translateX -= MOVE_SPEED / this.scale * elapsed
       if (this.controls.zoomIn) this.scale *= Math.pow(SCALE_SPEED, elapsed)
       if (this.controls.zoomOut) this.scale /= Math.pow(SCALE_SPEED, elapsed)
 
@@ -156,36 +156,31 @@ export default {
         this.translateY * this.scale + this.centerY
         )
 
-      const validPolygons = this.polygons.filter(p => p.isValid && p.isVisible)
+      const visiblePolygons = this.polygons.filter(p => p.isVisible)
 
-      for (const poly of validPolygons) {
-        this.ctx.strokeStyle = poly.color
-        this.ctx.lineWidth = (poly.isFocus ? 2 : 1) / this.scale;
-        try{
-          this.renderPolygon(poly.data)
-        } catch {
-          poly.isValid = false
-        }
+      for (const poly of visiblePolygons) {
+        if (poly.isFocus) continue
+        this.renderPolygon(poly)
       }
 
-      this.ctx.setTransform(this.scale, 0, 0, this.scale, 
-        this.translateX * this.scale + this.centerX, 
-        this.translateY * this.scale + this.centerY
-      )
-
-      const focusPolygon = validPolygons.find(p => p.isFocus)
+      const focusPolygon = visiblePolygons.find(p => p.isFocus)
       if (focusPolygon) {
-        this.ctx.fillStyle = "white";
-        this.ctx.font = "30px serif";
-        this.renderText(focusPolygon.data)
+        this.renderPolygon(focusPolygon)
+        this.renderText(focusPolygon)
       }
   
     },
 
     renderPolygon(polygon) {
+      this.ctx.strokeStyle = polygon.color
+      this.ctx.lineWidth = (polygon.isFocus ? 2 : 1) / this.scale;
+      this.renderPolygonRec(polygon.data)
+    },
+
+    renderPolygonRec(polygon) {
       if (Array.isArray(polygon[0])) {
         for (const poly of polygon) {
-          this.renderPolygon(poly);
+          this.renderPolygonRec(poly);
         }
         return;
       }
@@ -202,9 +197,19 @@ export default {
     },
 
     renderText(polygon) {
+      this.ctx.setTransform(this.scale, 0, 0, this.scale, 
+        this.translateX * this.scale + this.centerX, 
+        this.translateY * this.scale + this.centerY
+      )
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "30px serif";
+      this.renderTextRec(polygon.data)
+    },
+
+    renderTextRec(polygon) {
       if (Array.isArray(polygon[0])) {
         for (const poly of polygon) {
-          this.renderText(poly);
+          this.renderTextRec(poly);
         }
         return;
       }

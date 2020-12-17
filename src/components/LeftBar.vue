@@ -1,12 +1,12 @@
 <template>
   <div class="left-bar">
-    <div class="item">
+    <div class="input-container">
       <input v-model="newPolygonJSON"/>
       <button :disabled="!isValid" @click="addPolygon">添加</button>
       <button @click="clearPolygons">清除所有</button>
-    </div>
-    <div v-show="!isValid && newPolygonJSON.length>0" class="item error-tip">
-      数据格式不正确
+      <div v-show="!isValid && newPolygonJSON.length>0" class="error-tip">
+        数据格式不正确
+      </div>
     </div>
     <div 
       class="item" 
@@ -15,6 +15,7 @@
       :class="{isFocus: poly.isFocus}"
       @mouseenter="focus(poly)"
       >
+      <input v-model="poly.name" />
       <button @click="handleDelete(poly)">删除</button>
       <button @click="poly.changeColor()">换色</button>
       <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
@@ -34,6 +35,7 @@ export default {
   },
 
   data: function () {
+    window.LeftBar = this
     return {
       newPolygonJSON: ""
     }
@@ -82,26 +84,50 @@ export default {
 
 .left-bar {
   background-color: white;
-  height: 100%;
+  height: calc(100vh - 20px);
   position: absolute;
   box-shadow: 4px 0 6px black;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding: 10px 0 10px 0;
+  min-width: 350px;
 }
 
-.item {
-  margin-top: 10px;
-  margin-left: 10px;
-  margin-right: 20px;
+.input-container {
+  margin: 10px 20px 10px 20px;
+  border-bottom: 1px solid;
+  height: 50px;
 }
 
-.item.error-tip {
+.error-tip {
   color: red;
   font-size: 12px;
 }
 
+.item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  height: 40px;
+}
+
+.item>:first-child {
+  margin-left: 20px;
+}
+.item>:last-child {
+  margin-right: 20px;
+}
+
+.item>input {
+  border: none;
+}
+
 .item.isFocus {
+  background-color: #eeeeee;
+}
+.item.isFocus>input {
   background-color: #eeeeee;
 }
 

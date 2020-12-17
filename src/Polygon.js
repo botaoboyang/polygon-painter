@@ -33,11 +33,10 @@ class Polygon {
     if (typeof(data) == 'string') {
       data = JSON.parse(data.toLowerCase())
     }
-
     this.data = data
     this.id = currentId++;
+    this.name = `多边形${currentId}`
     this.color = randomColor();
-    this.isValid = true;
     this.isVisible = true;
     this.isFocus = false;
   }
