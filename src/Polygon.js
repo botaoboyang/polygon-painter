@@ -7,30 +7,39 @@ class Polygon {
       Math.floor(Math.random() * 400 - 200), 
       Math.floor(Math.random() * 400 - 200)
     );
-    return new Polygon(JSON.stringify(points));
+    return new Polygon(points);
   }
 
-  constructor(json) {
+  static isValidJson(json) {
+    try {
+      const data = JSON.parse(json.toLowerCase())
+      return Polygon.isValidData(data)
+    } catch {
+      return false
+    }
+  }
+
+  static isValidData(data) {
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        if (!Polygon.isValidData(item)) return false
+      }
+    } else {
+      return typeof(data.x) === 'number' && typeof(data.y) === 'number'
+    }
+  }
+
+  constructor(data) {
+    if (typeof(data) == 'string') {
+      data = JSON.parse(data.toLowerCase())
+    }
+
+    this.data = data
     this.id = currentId++;
     this.color = randomColor();
     this.isValid = true;
     this.isVisible = true;
     this.isFocus = false;
-    this.json = json;
-  }
-
-  get json() {
-    return this._json
-  }
-
-  set json(v) {
-    this._json = v
-    try {
-      this.data = JSON.parse(v.toLowerCase());
-      this.isValid = true;
-    } catch {
-      this.isValid = false;
-    }
   }
 
   changeColor() {

@@ -2,15 +2,22 @@
   <div class="left-bar">
     <div class="item">
       <input v-model="newPolygonJSON"/>
-      <button @click="addPolygon">添加</button>
-      <button @click="addRandomPolygon">随机</button>
-      <button @click="clearPolygons">清除</button>
+      <button :disabled="!isValid" @click="addPolygon">添加</button>
+      <button @click="clearPolygons">清除所有</button>
     </div>
-    <div class="item" v-for="poly in polygons" :key="poly.id">
-      <input @focus="focus(poly)" :class="{invalid: !poly.isValid}" type="text" v-model="poly.json"/>
+    <div v-show="!isValid && newPolygonJSON.length>0" class="item error-tip">
+      数据格式不正确
+    </div>
+    <div 
+      class="item" 
+      v-for="poly in polygons"
+      :key="poly.id"
+      :class="{isFocus: poly.isFocus}"
+      @mouseenter="focus(poly)"
+      >
       <button @click="handleDelete(poly)">删除</button>
-      <button @focus="focus(poly)" @click="poly.changeColor()">换色</button>
-      <button @focus="focus(poly)" @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
+      <button @click="poly.changeColor()">换色</button>
+      <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
     </div>
   </div>
 </template>
@@ -29,6 +36,12 @@ export default {
   data: function () {
     return {
       newPolygonJSON: ""
+    }
+  },
+
+  computed: {
+    isValid () {
+      return Polygon.isValidJson(this.newPolygonJSON)
     }
   },
 
@@ -63,35 +76,6 @@ export default {
   }
 }
 
-function randomPolygon(offsetX, offsetY) {
-  return [{
-    x: Math.floor(Math.random() * 200) + offsetX,
-    y: -Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: -Math.floor(Math.random() * 200) + offsetX,
-    y: -Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: -Math.floor(Math.random() * 200) + offsetX,
-    y: Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: Math.floor(Math.random() * 200) + offsetX,
-    y: Math.floor(Math.random() * 200) + offsetY
-  }]
-}
-
-function randomColor() {
-  let r, g, b;
-  do {
-    r = Math.floor(Math.random() * 256);
-    g = Math.floor(Math.random() * 256);
-    b = Math.floor(Math.random() * 256);
-  } while (r + g + b < 100);
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
 </script>
 
 <style scoped>
@@ -112,9 +96,14 @@ function randomColor() {
   margin-right: 20px;
 }
 
-.invalid {
-  border-color: red;
-  border-style: solid;
+.item.error-tip {
+  color: red;
+  font-size: 12px;
 }
+
+.item.isFocus {
+  background-color: #eeeeee;
+}
+
 
 </style>
