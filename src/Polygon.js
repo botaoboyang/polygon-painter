@@ -10,22 +10,25 @@ class Polygon {
     return new Polygon(points);
   }
 
-  static isValidJson(json) {
+  static isErrorJson(json) {
     try {
       const data = JSON.parse(json.toLowerCase())
-      return Polygon.isValidData(data)
+      return Polygon.isErrorData(data)
     } catch {
-      return false
+      return '不符合JSON格式'
     }
   }
 
-  static isValidData(data) {
+  static isErrorData(data) {
     if (Array.isArray(data)) {
       for (const item of data) {
-        if (!Polygon.isValidData(item)) return false
+        const err = Polygon.isErrorData(item)
+        if (err) return err
       }
     } else {
-      return typeof(data.x) === 'number' && typeof(data.y) === 'number'
+      if (typeof(data.x) !== 'number' || typeof(data.y) !== 'number') {
+        return `${JSON.stringify(data)} 不符合格式`
+      }
     }
   }
 

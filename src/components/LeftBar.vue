@@ -2,10 +2,10 @@
   <div class="left-bar">
     <div class="input-container">
       <input v-model="newPolygonJSON"/>
-      <button :disabled="!isValid" @click="addPolygon">添加</button>
+      <button :disabled="error" @click="addPolygon">添加</button>
       <button @click="clearPolygons">清除所有</button>
-      <div v-show="!isValid && newPolygonJSON.length>0" class="error-tip">
-        数据格式不正确
+      <div v-show="newPolygonJSON.length>0" class="error-tip">
+        {{ error }}
       </div>
     </div>
     <div 
@@ -43,8 +43,8 @@ export default {
   },
 
   computed: {
-    isValid () {
-      return Polygon.isValidJson(this.newPolygonJSON)
+    error () {
+      return Polygon.isErrorJson(this.newPolygonJSON)
     },
   },
 
