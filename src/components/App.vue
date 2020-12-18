@@ -6,19 +6,19 @@
 </template>
 
 <script>
-import LeftBar from "./LeftBar"
-import Content from "./Content"
+import LeftBar from './LeftBar'
+import Content from './Content'
 
 export default {
   components: {
     LeftBar,
-    Content,
-  }, 
+    Content
+  },
   data () {
     return {
       polygons: []
     }
-  },
+  }
 }
 </script>
 

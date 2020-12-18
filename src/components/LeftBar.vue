@@ -8,8 +8,8 @@
         {{ error }}
       </div>
     </div>
-    <div 
-      class="item" 
+    <div
+      class="item"
       v-for="poly in polygons"
       :key="poly.id"
       :class="{isFocus: poly.isFocus}"
@@ -25,61 +25,63 @@
 </template>
 
 <script>
-import Polygon from '../Polygon';
+import Polygon from '../Polygon'
 
 export default {
 
-  name: "LeftBar",
+  name: 'LeftBar',
 
   props: {
-    polygons: Array,
+    polygons: Array
   },
 
   data: function () {
     window.LeftBar = this
     return {
-      newPolygonJSON: ""
+      newPolygonJSON: ''
     }
   },
 
   computed: {
     error () {
       return Polygon.isErrorJson(this.newPolygonJSON)
-    },
+    }
   },
 
   methods: {
 
     polyStyle (poly) {
-      return {backgroundColor: poly.color}
+      return { backgroundColor: poly.color }
     },
 
-    focus(poly) {
+    focus (poly) {
       if (!poly.isVisible) return
-      this.polygons.forEach(p => p.isFocus = false);
-      poly.isFocus = true;
+      this.polygons.forEach(p => {
+        p.isFocus = false
+      })
+      poly.isFocus = true
     },
 
-    addRandomPolygon() {
-      const newPolygon = Polygon.randomPolygon();
-      this.polygons.push(newPolygon);
-      this.focus(newPolygon);
+    addRandomPolygon () {
+      const newPolygon = Polygon.randomPolygon()
+      this.$emit('update:polygons', [...this.polygons, newPolygon])
+      this.focus(newPolygon)
     },
 
-    addPolygon() {
-      const newPolygon = new Polygon(this.newPolygonJSON);
-      this.polygons.push(newPolygon);
-      this.newPolygonJSON = "";
-      this.focus(newPolygon);
+    addPolygon () {
+      const newPolygon = new Polygon(this.newPolygonJSON)
+      this.$emit('update:polygons', [...this.polygons, newPolygon])
+      this.newPolygonJSON = ''
+      this.focus(newPolygon)
     },
 
-    handleDelete(poly) {
+    handleDelete (poly) {
       this.$emit('update:polygons', this.polygons.filter(p => p.id !== poly.id))
     },
 
-    clearPolygons() {
+    clearPolygons () {
       this.$emit('update:polygons', [])
-    },
+    }
 
   }
 }
