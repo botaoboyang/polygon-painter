@@ -5,12 +5,19 @@
   "author": "hanbotao",
   "scripts": {
     "build": "webpack --mode=production",
-    "serve": "webpack serve"
+    "serve": "webpack serve",
+    "lint": "eslint src --fix"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "babel-loader": "^8.2.1",
     "css-loader": "^5.0.1",
+    "eslint": "^7.15.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-vue": "^7.3.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^4.5.0",
     "raw-loader": "^4.0.2",
