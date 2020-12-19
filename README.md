@@ -11,7 +11,7 @@ npm install
 ## Development
 
 ```
-npm run serve
+npm start
 ```
 
 ## Build
