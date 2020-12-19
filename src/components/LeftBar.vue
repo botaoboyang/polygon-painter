@@ -132,6 +132,7 @@ export default {
 .item>input {
   border: none;
   background-color: rgba(0, 0, 0, 0);
+  width: 80px;
 }
 
 .item>.highlight {
