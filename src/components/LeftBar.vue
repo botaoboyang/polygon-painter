@@ -3,23 +3,26 @@
     <div class="input-container">
       <input v-model="newPolygonJSON"/>
       <button :disabled="error" @click="addPolygon">添加</button>
-      <button @click="clearPolygons">清除所有</button>
+      <button @click="addRandomPolygon">随机</button>
+      <button @click="clearPolygons">清除</button>
       <div v-show="newPolygonJSON.length>0" class="error-tip">
         {{ error }}
       </div>
     </div>
-    <div
-      class="item"
-      v-for="poly in polygons"
-      :key="poly.id"
-      :class="{isFocus: poly.isFocus}"
-      :style="{backgroundColor: poly.isVisible ? poly.color : 'white'}"
-      @mouseenter="focus(poly)"
-      >
-      <input v-model="poly.name" />
-      <button @click="handleDelete(poly)">删除</button>
-      <button @click="poly.changeColor()">换色</button>
-      <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
+    <div class="item-container">
+      <div
+        class="item"
+        v-for="poly in polygons"
+        :key="poly.id"
+        :style="{backgroundColor: poly.isVisible ? poly.color : 'white'}"
+        @mouseenter="focus(poly)"
+        >
+        <input v-model="poly.name" />
+        <button @click="handleDelete(poly)">删除</button>
+        <button @click="poly.changeColor()">换色</button>
+        <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
+        <div v-if="poly.isFocus" class="highlight"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -36,7 +39,6 @@ export default {
   },
 
   data: function () {
-    window.LeftBar = this
     return {
       newPolygonJSON: ''
     }
@@ -92,13 +94,10 @@ export default {
 
 .left-bar {
   background-color: white;
-  height: calc(100vh - 20px);
-  position: absolute;
+  height: 100vh;
   box-shadow: 4px 0 6px black;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 10px 0 10px 0;
   min-width: 350px;
 }
 
@@ -106,6 +105,7 @@ export default {
   margin: 10px 20px 10px 20px;
   border-bottom: 1px solid;
   height: 50px;
+  min-height: 50px;
 }
 
 .error-tip {
@@ -113,35 +113,33 @@ export default {
   font-size: 12px;
 }
 
+.item-container {
+  width: 100%;
+  overflow-y: auto;
+}
+
 .item {
+  padding-left: 0 20px 0 20px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: space-around;
   align-items: center;
   height: 50px;
-}
-
-.item.isFocus::before {
-  background-color: yellow;
-  height: 50px;
-  width: 10px;
-  content: "";
-  position: absolute;
-}
-
-.item>:first-child {
-  margin-left: 20px;
-}
-.item>:nth-child(n) {
-  margin-left: 10px;
-}
-.item>:last-child {
-  margin-right: 20px;
+  position: relative;
 }
 
 .item>input {
   border: none;
   background-color: rgba(0, 0, 0, 0);
+}
+
+.item>.highlight {
+  position: absolute;
+  right: 0;
+  height: 50px;
+  width: 10px;
+  background-color: yellow;
 }
 
 </style>

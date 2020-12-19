@@ -45,15 +45,16 @@ export default {
 
   mounted: function () {
     this.canvas = document.getElementById('canvas')
-    this.canvas.width = window.innerWidth
-    this.canvas.height = window.innerHeight
+    this.canvas.width = this.canvas.clientWidth
+    this.canvas.height = this.canvas.clientHeight
+
     this.ctx = this.canvas.getContext('2d')
     this.ctx.textAlign = 'left'
     this.ctx.textBaseline = 'bottom'
     this.ctx.direction = 'ltr'
 
-    this.centerX = Math.floor(window.innerWidth / 2) + 150
-    this.centerY = Math.floor(window.innerHeight / 2)
+    this.centerX = Math.floor(this.canvas.width / 2)
+    this.centerY = Math.floor(this.canvas.height / 2)
 
     window.onresize = this.handleResize
     window.onkeydown = this.handleKeyDown
@@ -117,8 +118,8 @@ export default {
     },
 
     handleResize () {
-      this.canvas.width = window.innerWidth
-      this.canvas.height = window.innerHeight
+      this.canvas.width = this.canvas.clientWidth
+      this.canvas.height = this.canvas.clientHeight
     },
 
     handleControls (elapsed) {
@@ -224,6 +225,8 @@ export default {
 
 #canvas {
   display: block;
+  width: 100%;
+  height: 100vh;
 }
 
 </style>
