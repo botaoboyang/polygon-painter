@@ -2,12 +2,13 @@
   <div class="left-bar">
     <div class="input-container">
       <input v-model="newPolygonJSON"/>
-      <button :disabled="error" @click="addPolygon">添加</button>
-      <button @click="addRandomPolygon">随机</button>
-      <button @click="clearPolygons">清除</button>
-      <div v-show="newPolygonJSON.length>0" class="error-tip">
-        {{ error }}
-      </div>
+      <button :disabled="error" @click="clickAdd">添加</button>
+      <button @click="clickRandom">随机</button>
+      <button @click="clickClear">清除</button>
+      <button @click="clickToggleGrid">网格</button>
+    </div>
+    <div class="error-tip">
+      <span v-show="newPolygonJSON.length>0">{{ error }}</span>
     </div>
     <div class="item-container">
       <div
@@ -18,7 +19,7 @@
         @mouseenter="focus(poly)"
         >
         <input v-model="poly.name" />
-        <button @click="handleDelete(poly)">删除</button>
+        <button @click="clickDelete(poly)">删除</button>
         <button @click="poly.changeColor()">换色</button>
         <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
         <div v-if="poly.isFocus" class="highlight"></div>
@@ -44,16 +45,15 @@ export default {
     polygons () {
       return this.$store.state.polygons
     },
+    showGrid () {
+      return this.$store.state.showGrid
+    },
     error () {
       return Polygon.isErrorJson(this.newPolygonJSON)
     }
   },
 
   methods: {
-
-    polyStyle (poly) {
-      return { backgroundColor: poly.color }
-    },
 
     focus (poly) {
       if (!poly.isVisible) return
@@ -63,25 +63,29 @@ export default {
       poly.isFocus = true
     },
 
-    addRandomPolygon () {
+    clickRandom () {
       const newPolygon = Polygon.randomPolygon()
       this.$store.commit('update_polygons', [...this.polygons, newPolygon])
       this.focus(newPolygon)
     },
 
-    addPolygon () {
+    clickAdd () {
       const newPolygon = new Polygon(this.newPolygonJSON)
       this.$store.commit('update_polygons', [...this.polygons, newPolygon])
       this.newPolygonJSON = ''
       this.focus(newPolygon)
     },
 
-    handleDelete (poly) {
+    clickDelete (poly) {
       this.$store.commit('update_polygons', this.polygons.filter(p => p.id !== poly.id))
     },
 
-    clearPolygons () {
+    clickClear () {
       this.$store.commit('update_polygons', [])
+    },
+
+    clickToggleGrid () {
+      this.$store.commit('update_showGrid', !this.showGrid)
     }
 
   }
@@ -101,13 +105,20 @@ export default {
 }
 
 .input-container {
-  margin: 10px 20px 10px 20px;
-  border-bottom: 1px solid;
-  height: 50px;
-  min-height: 50px;
+  margin: 10px 20px 0 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: baseline;
+}
+
+.input-container input {
+  width: 120px;
 }
 
 .error-tip {
+  margin: 0 20px 0 20px;
+  min-height: 20px;
   color: red;
   font-size: 12px;
 }

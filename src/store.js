@@ -5,11 +5,15 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
-    polygons: []
+    polygons: [],
+    showGrid: false
   },
   mutations: {
     update_polygons (state, v) {
       state.polygons = v
+    },
+    update_showGrid (state, v) {
+      state.showGrid = v
     }
   }
 })
