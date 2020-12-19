@@ -28,15 +28,11 @@
 </template>
 
 <script>
-import Polygon from '../Polygon'
+import Polygon from '../models/Polygon'
 
 export default {
 
   name: 'LeftBar',
-
-  props: {
-    polygons: Array
-  },
 
   data: function () {
     return {
@@ -45,6 +41,9 @@ export default {
   },
 
   computed: {
+    polygons () {
+      return this.$store.state.polygons
+    },
     error () {
       return Polygon.isErrorJson(this.newPolygonJSON)
     }
@@ -66,23 +65,23 @@ export default {
 
     addRandomPolygon () {
       const newPolygon = Polygon.randomPolygon()
-      this.$emit('update:polygons', [...this.polygons, newPolygon])
+      this.$store.commit('update_polygons', [...this.polygons, newPolygon])
       this.focus(newPolygon)
     },
 
     addPolygon () {
       const newPolygon = new Polygon(this.newPolygonJSON)
-      this.$emit('update:polygons', [...this.polygons, newPolygon])
+      this.$store.commit('update_polygons', [...this.polygons, newPolygon])
       this.newPolygonJSON = ''
       this.focus(newPolygon)
     },
 
     handleDelete (poly) {
-      this.$emit('update:polygons', this.polygons.filter(p => p.id !== poly.id))
+      this.$store.commit('update_polygons', this.polygons.filter(p => p.id !== poly.id))
     },
 
     clearPolygons () {
-      this.$emit('update:polygons', [])
+      this.$store.commit('update_polygons', [])
     }
 
   }

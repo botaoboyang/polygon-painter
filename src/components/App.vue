@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <LeftBar :polygons.sync="polygons"/>
-    <Content :polygons="polygons"/>
+    <LeftBar/>
+    <Content/>
   </div>
 </template>
 
@@ -13,11 +13,6 @@ export default {
   components: {
     LeftBar,
     Content
-  },
-  data () {
-    return {
-      polygons: []
-    }
   }
 }
 </script>

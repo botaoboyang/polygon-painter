@@ -12,8 +12,10 @@ export default {
 
   name: 'Content',
 
-  props: {
-    polygons: Array
+  computed: {
+    polygons () {
+      return this.$store.state.polygons
+    }
   },
 
   data: function () {
