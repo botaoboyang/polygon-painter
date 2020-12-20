@@ -98,7 +98,6 @@ export default {
 .left-bar {
   background-color: white;
   height: 100vh;
-  box-shadow: 4px 0 6px black;
   display: flex;
   flex-direction: column;
   min-width: 350px;

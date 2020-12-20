@@ -8,6 +8,10 @@ const MOVE_SPEED = 0.3
 const MIN_SCALE = 0.001
 const SCALE_SPEED = 1.002
 
+const GRID_COLOR = '#eeeeee'
+const GRID_SIZE = 100
+const GRID_WIDTH = 5000
+
 export default {
 
   name: 'Content',
@@ -15,6 +19,9 @@ export default {
   computed: {
     polygons () {
       return this.$store.state.polygons
+    },
+    showGrid () {
+      return this.$store.state.showGrid
     }
   },
 
@@ -140,6 +147,7 @@ export default {
       this.lastRenderTime = timestamp
       this.handleControls(elapsed)
       this.renderBackground()
+      if (this.showGrid) this.renderGrid()
       this.renderPolygons()
       window.requestAnimationFrame(this.render)
     },
@@ -148,6 +156,31 @@ export default {
       this.ctx.setTransform(1, 0, 0, 1, 0, 0)
       this.ctx.fillStyle = 'black'
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    },
+
+    renderGrid () {
+      this.ctx.setTransform(this.scale, 0, 0, -this.scale,
+        this.translateX * this.scale + this.centerX,
+        this.translateY * this.scale + this.centerY
+      )
+
+      this.ctx.strokeStyle = GRID_COLOR
+      this.ctx.lineWidth = 1 / this.scale
+
+      this.ctx.beginPath()
+
+      for (let x = -GRID_WIDTH; x <= GRID_WIDTH; x += GRID_SIZE) {
+        this.ctx.moveTo(x, -GRID_WIDTH)
+        this.ctx.lineTo(x, GRID_WIDTH)
+      }
+
+      for (let y = -GRID_WIDTH; y <= GRID_WIDTH; y += GRID_SIZE) {
+        this.ctx.moveTo(-GRID_WIDTH, y)
+        this.ctx.lineTo(GRID_WIDTH, y)
+      }
+
+      this.ctx.closePath()
+      this.ctx.stroke()
     },
 
     renderPolygons () {
@@ -201,7 +234,8 @@ export default {
         this.translateY * this.scale + this.centerY
       )
       this.ctx.fillStyle = 'white'
-      this.ctx.font = '30px serif'
+      const fontSize = 16 / this.scale
+      this.ctx.font = `${fontSize}px serif`
       this.renderTextRec(polygon.data)
     },
 
@@ -214,7 +248,7 @@ export default {
       }
 
       for (let i = 0; i < polygon.length; i++) {
-        this.ctx.fillText(i, polygon[i].x + 10, -polygon[i].y - 10)
+        this.ctx.fillText(i, polygon[i].x, -polygon[i].y)
       }
     }
 
