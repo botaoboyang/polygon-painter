@@ -6,8 +6,7 @@
 import { mapState } from 'vuex'
 import { taggedTemplateMaker } from '../utils'
 
-const mr = taggedTemplateMaker(Math.round)
-const pr = taggedTemplateMaker(v => v.toPrecision(3))
+const r = taggedTemplateMaker(v => v.toFixed(2))
 
 const MOVE_SPEED = 0.3
 
@@ -64,8 +63,8 @@ export default {
 
   mounted: function () {
     this.canvas = document.getElementById('canvas')
-    this.canvas.width = this.canvas.clientWidth
-    this.canvas.height = this.canvas.clientHeight
+    this.canvas.width = this.canvas.offsetWidth
+    this.canvas.height = this.canvas.offsetHeight
 
     this.ctx = this.canvas.getContext('2d')
     this.ctx.textAlign = 'left'
@@ -75,20 +74,21 @@ export default {
     this.translateX = Math.floor(this.canvas.width / 2) / this.scale
     this.translateY = Math.floor(this.canvas.height / 2) / this.scale
 
-    window.onresize = this.handleResize
-    window.onkeydown = this.handleKeyDown
-    window.onkeyup = this.handleKeyUp
-    this.canvas.addEventListener('wheel', this.handleScroll)
+    window.addEventListener('resize', this.handleResize)
+    window.addEventListener('keydown', this.handleKeydown)
+    window.addEventListener('keyup', this.handleKeyup)
+
+    this.canvas.addEventListener('wheel', this.handleWheel)
     this.canvas.addEventListener('mousedown', this.handleMousedown)
     this.canvas.addEventListener('mousemove', this.handleMousemove)
     window.addEventListener('mouseup', this.handleMouseup)
 
-    window.requestAnimationFrame(this.render)
+    requestAnimationFrame(this.render)
   },
 
   methods: {
 
-    handleKeyDown (e) {
+    handleKeydown (e) {
       if (e.code === 'KeyW') this.controls.up = true
       else if (e.code === 'KeyA') this.controls.left = true
       else if (e.code === 'KeyS') this.controls.down = true
@@ -97,7 +97,7 @@ export default {
       else if (e.code === 'ArrowDown') this.controls.zoomOut = true
     },
 
-    handleKeyUp (e) {
+    handleKeyup (e) {
       if (e.code === 'KeyW') this.controls.up = false
       else if (e.code === 'KeyA') this.controls.left = false
       else if (e.code === 'KeyS') this.controls.down = false
@@ -135,7 +135,7 @@ export default {
       this.controls.mousedown = false
     },
 
-    handleScroll (e) {
+    handleWheel (e) {
       this.mouseX = e.offsetX
       this.mouseY = e.offsetY
       this.zoom(-e.deltaY)
@@ -149,8 +149,8 @@ export default {
     },
 
     handleResize () {
-      this.canvas.width = this.canvas.clientWidth
-      this.canvas.height = this.canvas.clientHeight
+      this.canvas.width = this.canvas.offsetWidth
+      this.canvas.height = this.canvas.offsetHeight
     },
 
     handleControls (elapsed) {
@@ -207,11 +207,12 @@ export default {
       this.ctx.setTransform(1, 0, 0, 1, 0, 0)
       this.ctx.fillStyle = 'white'
       this.ctx.font = '16px serif'
-      this.ctx.fillText(pr`scale: ${this.scale}`, 10, 10)
-      this.ctx.fillText(mr`translate x: ${this.translateX}`, 10, 30)
-      this.ctx.fillText(mr`translate y: ${this.translateY}`, 10, 50)
-      this.ctx.fillText(mr`x: ${this.x}`, 10, 70)
-      this.ctx.fillText(mr`y: ${this.y}`, 10, 90)
+      this.ctx.fillText(r`scale: ${this.scale}`, 10, 10)
+      this.ctx.fillText(r`translate x: ${this.translateX}`, 10, 30)
+      this.ctx.fillText(r`translate y: ${this.translateY}`, 10, 50)
+      this.ctx.fillText(r`x: ${this.x}`, 10, 70)
+      this.ctx.fillText(r`y: ${this.y}`, 10, 90)
+      this.ctx.fillText(r`size: ${this.canvas.width / this.scale} * ${this.canvas.height / this.scale}`, 10, 110)
     },
 
     renderPolygons () {
