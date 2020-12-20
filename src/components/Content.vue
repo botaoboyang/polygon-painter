@@ -3,6 +3,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { taggedTemplateMaker } from '../utils'
+
+const mr = taggedTemplateMaker(Math.round)
+const pr = taggedTemplateMaker(v => v.toPrecision(3))
+
 const MOVE_SPEED = 0.3
 
 const MIN_SCALE = 0.001
@@ -17,11 +23,15 @@ export default {
   name: 'Content',
 
   computed: {
-    polygons () {
-      return this.$store.state.polygons
+    ...mapState(['polygons', 'showGrid', 'showStats']),
+    transform () {
+      return [this.scale, 0, 0, -this.scale, this.translateX * this.scale, this.translateY * this.scale]
     },
-    showGrid () {
-      return this.$store.state.showGrid
+    x () {
+      return this.mouseX / this.scale - this.translateX
+    },
+    y () {
+      return -this.mouseY / this.scale + this.translateY
     }
   },
 
@@ -29,12 +39,12 @@ export default {
     return {
       lastRenderTime: 0,
 
-      centerX: 0,
-      centerY: 0,
-
       translateX: 0,
       translateY: 0,
-      scale: 0.5,
+      scale: 1,
+
+      mouseX: 0,
+      mouseY: 0,
 
       controls: {
         left: false,
@@ -59,11 +69,11 @@ export default {
 
     this.ctx = this.canvas.getContext('2d')
     this.ctx.textAlign = 'left'
-    this.ctx.textBaseline = 'bottom'
+    this.ctx.textBaseline = 'top'
     this.ctx.direction = 'ltr'
 
-    this.centerX = Math.floor(this.canvas.width / 2)
-    this.centerY = Math.floor(this.canvas.height / 2)
+    this.translateX = Math.floor(this.canvas.width / 2) / this.scale
+    this.translateY = Math.floor(this.canvas.height / 2) / this.scale
 
     window.onresize = this.handleResize
     window.onkeydown = this.handleKeyDown
@@ -98,15 +108,18 @@ export default {
 
     handleMousedown (e) {
       this.controls.mousedown = true
-      const { clientX: x, clientY: y } = e
+      const { offsetX: x, offsetY: y } = e
 
       this.controls.mousedownX = x
       this.controls.mousedownY = y
     },
 
     handleMousemove (e) {
+      const { offsetX: x, offsetY: y } = e
+      this.mouseX = x
+      this.mouseY = y
+
       if (!this.controls.mousedown) return
-      const { clientX: x, clientY: y } = e
 
       const offsetX = x - this.controls.mousedownX
       const offsetY = y - this.controls.mousedownY
@@ -123,7 +136,16 @@ export default {
     },
 
     handleScroll (e) {
-      this.scale /= Math.pow(SCALE_SPEED, e.deltaY)
+      this.mouseX = e.offsetX
+      this.mouseY = e.offsetY
+      this.zoom(-e.deltaY)
+    },
+
+    zoom (delta) {
+      const r = Math.pow(SCALE_SPEED, delta)
+      this.scale *= r
+      this.translateX += this.mouseX * (1 - r) / this.scale
+      this.translateY += this.mouseY * (1 - r) / this.scale
     },
 
     handleResize () {
@@ -136,8 +158,8 @@ export default {
       if (this.controls.down) this.translateY -= MOVE_SPEED / this.scale * elapsed
       if (this.controls.left) this.translateX += MOVE_SPEED / this.scale * elapsed
       if (this.controls.right) this.translateX -= MOVE_SPEED / this.scale * elapsed
-      if (this.controls.zoomIn) this.scale *= Math.pow(SCALE_SPEED, elapsed)
-      if (this.controls.zoomOut) this.scale /= Math.pow(SCALE_SPEED, elapsed)
+      if (this.controls.zoomIn) this.zoom(elapsed)
+      if (this.controls.zoomOut) this.zoom(-elapsed)
 
       if (this.scale < MIN_SCALE) this.scale = MIN_SCALE
     },
@@ -147,6 +169,7 @@ export default {
       this.lastRenderTime = timestamp
       this.handleControls(elapsed)
       this.renderBackground()
+      if (this.showStats) this.renderStats()
       if (this.showGrid) this.renderGrid()
       this.renderPolygons()
       window.requestAnimationFrame(this.render)
@@ -159,10 +182,7 @@ export default {
     },
 
     renderGrid () {
-      this.ctx.setTransform(this.scale, 0, 0, -this.scale,
-        this.translateX * this.scale + this.centerX,
-        this.translateY * this.scale + this.centerY
-      )
+      this.ctx.setTransform(...this.transform)
 
       this.ctx.strokeStyle = GRID_COLOR
       this.ctx.lineWidth = 1 / this.scale
@@ -183,11 +203,19 @@ export default {
       this.ctx.stroke()
     },
 
+    renderStats () {
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0)
+      this.ctx.fillStyle = 'white'
+      this.ctx.font = '16px serif'
+      this.ctx.fillText(pr`scale: ${this.scale}`, 10, 10)
+      this.ctx.fillText(mr`translate x: ${this.translateX}`, 10, 30)
+      this.ctx.fillText(mr`translate y: ${this.translateY}`, 10, 50)
+      this.ctx.fillText(mr`x: ${this.x}`, 10, 70)
+      this.ctx.fillText(mr`y: ${this.y}`, 10, 90)
+    },
+
     renderPolygons () {
-      this.ctx.setTransform(this.scale, 0, 0, -this.scale,
-        this.translateX * this.scale + this.centerX,
-        this.translateY * this.scale + this.centerY
-      )
+      this.ctx.setTransform(...this.transform)
 
       const visiblePolygons = this.polygons.filter(p => p.isVisible)
 
@@ -230,8 +258,8 @@ export default {
 
     renderText (polygon) {
       this.ctx.setTransform(this.scale, 0, 0, this.scale,
-        this.translateX * this.scale + this.centerX,
-        this.translateY * this.scale + this.centerY
+        this.translateX * this.scale,
+        this.translateY * this.scale
       )
       this.ctx.fillStyle = 'white'
       const fontSize = 16 / this.scale

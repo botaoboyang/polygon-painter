@@ -6,7 +6,8 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     polygons: [],
-    showGrid: false
+    showGrid: false,
+    showStats: true
   },
   mutations: {
     update_polygons (state, v) {

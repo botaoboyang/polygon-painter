@@ -1,3 +1,5 @@
+import { randomColor } from '../utils'
+
 let currentId = 0
 
 class Polygon {
@@ -69,16 +71,6 @@ function randomPolygon (offsetX, offsetY) {
     x: Math.floor(Math.random() * 200) + offsetX,
     y: Math.floor(Math.random() * 200) + offsetY
   }]
-}
-
-function randomColor () {
-  let r, g, b
-  do {
-    r = Math.floor(Math.random() * 256)
-    g = Math.floor(Math.random() * 256)
-    b = Math.floor(Math.random() * 256)
-  } while (r * 0.299 + g * 0.587 + b * 0.114 < 100)
-  return `rgb(${r}, ${g}, ${b})`
 }
 
 export default Polygon
