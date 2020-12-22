@@ -4,13 +4,19 @@
       <input v-model="newPolygonJSON"/>
       <button :disabled="error" @click="clickAdd">添加</button>
       <button @click="clickRandom">随机</button>
-      <button @click="clickClear">删除全部</button>
-      <button @click="clickHide">{{ allHidden ? '显示全部' : '隐藏全部' }}</button>
-      <button @click="clickToggleGrid">网格</button>
+      <button @click="toggle_showGrid">网格</button>
     </div>
     <div class="error-tip">
       <span v-show="newPolygonJSON.length>0">{{ error }}</span>
     </div>
+
+    <div class="button-container">
+      <button :disabled="!canUndo" @click="undo">&lt;=</button>
+      <button :disabled="!canRedo" @click="redo">=&gt;</button>
+      <button @click="clickClear">删除全部</button>
+      <button @click="clickHide">{{ allHidden ? '显示全部' : '隐藏全部' }}</button>
+    </div>
+
     <div class="item-container" v-show="polygons.length > 0">
       <div
         class="item"
@@ -31,6 +37,7 @@
 
 <script>
 import Polygon from '../models/Polygon'
+import { mapState, mapGetters, mapMutations } from 'vuex'
 
 export default {
 
@@ -43,12 +50,8 @@ export default {
   },
 
   computed: {
-    polygons () {
-      return this.$store.state.polygons
-    },
-    showGrid () {
-      return this.$store.state.showGrid
-    },
+    ...mapState(['polygons', 'showGrid']),
+    ...mapGetters(['canUndo', 'canRedo']),
     error () {
       return Polygon.isErrorJson(this.newPolygonJSON)
     },
@@ -58,6 +61,8 @@ export default {
   },
 
   methods: {
+
+    ...mapMutations(['undo', 'redo', 'toggle_showGrid']),
 
     itemStyle (poly) {
       if (poly.isVisible) {
@@ -105,10 +110,6 @@ export default {
       this.polygons.forEach(p => {
         p.isVisible = visible
       })
-    },
-
-    clickToggleGrid () {
-      this.$store.commit('update_showGrid', !this.showGrid)
     }
 
   }
@@ -118,11 +119,16 @@ export default {
 
 <style scoped>
 
+button {
+  white-space: nowrap;
+}
+
 .left-bar {
   background-color: white;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 300px;
 }
 
 .input-container {
@@ -131,11 +137,18 @@ export default {
   flex-direction: row;
   justify-content: space-around;
   align-items: baseline;
-  width: max-content;
 }
 
-.input-container input {
-  width: 40px;
+.input-container>input {
+  width: 80px;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: baseline;
+  margin-bottom: 10px;
 }
 
 .error-tip {
