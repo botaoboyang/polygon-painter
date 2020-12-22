@@ -26,11 +26,8 @@ export default {
     transform () {
       return [this.scale, 0, 0, -this.scale, this.translateX * this.scale, this.translateY * this.scale]
     },
-    x () {
-      return this.mouseX / this.scale - this.translateX
-    },
-    y () {
-      return -this.mouseY / this.scale + this.translateY
+    mouse () {
+      return this.toRealCoords({ x: this.mouseX, y: this.mouseY })
     }
   },
 
@@ -87,6 +84,21 @@ export default {
   },
 
   methods: {
+
+    toCanvasCoords ({ x, y }) {
+      const [xScale, , , yScale, xOffset, yOffset] = this.transform
+      return {
+        x: x * xScale + xOffset,
+        y: y * yScale + yOffset
+      }
+    },
+
+    toRealCoords ({ x, y }) {
+      return {
+        x: x / this.scale - this.translateX,
+        y: -this.mouseY / this.scale + this.translateY
+      }
+    },
 
     handleKeydown (e) {
       if (e.code === 'KeyW') this.controls.up = true
@@ -176,7 +188,7 @@ export default {
     },
 
     renderBackground () {
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0)
+      this.ctx.resetTransform()
       this.ctx.fillStyle = 'black'
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     },
@@ -204,20 +216,18 @@ export default {
     },
 
     renderStats () {
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0)
+      this.ctx.resetTransform()
       this.ctx.fillStyle = 'white'
       this.ctx.font = '16px serif'
       this.ctx.fillText(r`scale: ${this.scale}`, 10, 10)
       this.ctx.fillText(r`translate x: ${this.translateX}`, 10, 30)
       this.ctx.fillText(r`translate y: ${this.translateY}`, 10, 50)
-      this.ctx.fillText(r`x: ${this.x}`, 10, 70)
-      this.ctx.fillText(r`y: ${this.y}`, 10, 90)
+      this.ctx.fillText(r`x: ${this.mouse.x}`, 10, 70)
+      this.ctx.fillText(r`y: ${this.mouse.y}`, 10, 90)
       this.ctx.fillText(r`size: ${this.canvas.width / this.scale} * ${this.canvas.height / this.scale}`, 10, 110)
     },
 
     renderPolygons () {
-      this.ctx.setTransform(...this.transform)
-
       const visiblePolygons = this.polygons.filter(p => p.isVisible)
 
       for (const poly of visiblePolygons) {
@@ -232,7 +242,26 @@ export default {
       }
     },
 
+    renderPoint (point) {
+      this.ctx.resetTransform()
+      const { x, y } = this.toCanvasCoords(point.data)
+
+      this.ctx.fillStyle = point.color
+      this.ctx.beginPath()
+      this.ctx.arc(x, y, 3, 0, 2 * Math.PI)
+      this.ctx.fill()
+
+      this.ctx.fillStyle = 'white'
+      this.ctx.font = '16px serif'
+      this.ctx.fillText(point.name, x, y)
+    },
+
     renderPolygon (polygon) {
+      if (!Array.isArray(polygon.data)) {
+        this.renderPoint(polygon)
+        return
+      }
+      this.ctx.setTransform(...this.transform)
       this.ctx.strokeStyle = polygon.color
       this.ctx.lineWidth = (polygon.isFocus ? 2 : 1) / this.scale
       this.renderPolygonRec(polygon.data)
@@ -258,13 +287,9 @@ export default {
     },
 
     renderText (polygon) {
-      this.ctx.setTransform(this.scale, 0, 0, this.scale,
-        this.translateX * this.scale,
-        this.translateY * this.scale
-      )
+      this.ctx.resetTransform()
       this.ctx.fillStyle = 'white'
-      const fontSize = 16 / this.scale
-      this.ctx.font = `${fontSize}px serif`
+      this.ctx.font = '16px serif'
       this.renderTextRec(polygon.data)
     },
 
@@ -277,7 +302,8 @@ export default {
       }
 
       for (let i = 0; i < polygon.length; i++) {
-        this.ctx.fillText(i, polygon[i].x, -polygon[i].y)
+        const { x, y } = this.toCanvasCoords(polygon[i])
+        this.ctx.fillText(i, x, y)
       }
     }
 
