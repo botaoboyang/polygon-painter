@@ -1,18 +1,18 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const path = require('path')
 
 module.exports = {
   mode: 'development',
   entry: './src/index.js',
   output: {
     filename: 'index_bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist')
   },
   devServer: {
     contentBase: './dist',
     compress: false,
-    port: 8888,
+    port: 8888
   },
   module: {
     rules: [
@@ -42,9 +42,9 @@ module.exports = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new HtmlWebpackPlugin({template: './src/index.html'})
+    new HtmlWebpackPlugin({ template: './src/index.html' })
   ],
   resolve: {
     extensions: ['.vue', '.js']
   }
-};
+}

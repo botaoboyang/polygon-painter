@@ -1,120 +1,192 @@
 <template>
   <div class="left-bar">
-    <div class="item">
+    <div class="input-container">
       <input v-model="newPolygonJSON"/>
-      <button @click="addPolygon">添加</button>
-      <button @click="addRandomPolygon">随机</button>
-      <button @click="clearPolygons">清除</button>
+      <button :disabled="error" @click="clickAdd">添加</button>
+      <button @click="clickRandom">随机</button>
+      <button @click="toggle_showGrid">网格</button>
     </div>
-    <div class="item" v-for="poly in polygons" :key="poly.id">
-      <input @focus="focus(poly)" :class="{invalid: !poly.isValid}" type="text" v-model="poly.json"/>
-      <button @click="handleDelete(poly)">删除</button>
-      <button @focus="focus(poly)" @click="poly.changeColor()">换色</button>
-      <button @focus="focus(poly)" @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
+    <div class="error-tip">
+      <span v-show="newPolygonJSON.length>0">{{ error }}</span>
+    </div>
+
+    <div class="button-container">
+      <button :disabled="!canUndo" @click="undo">&lt;=</button>
+      <button :disabled="!canRedo" @click="redo">=&gt;</button>
+      <button @click="clickClear">删除全部</button>
+      <button @click="clickHide">{{ allHidden ? '显示全部' : '隐藏全部' }}</button>
+    </div>
+
+    <div class="item-container" v-show="polygons.length > 0">
+      <div
+        class="item"
+        v-for="poly in polygons"
+        :key="poly.id"
+        :style="itemStyle(poly)"
+        @mouseenter="focus(poly)"
+        >
+        <input v-model="poly.name" />
+        <button @click="clickDelete(poly)">删除</button>
+        <button @click="poly.changeColor()">换色</button>
+        <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
+        <div v-if="poly.isFocus" class="highlight"></div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import Polygon from '../Polygon';
+import Polygon from '../models/Polygon'
+import { mapState, mapGetters, mapMutations } from 'vuex'
 
 export default {
 
-  name: "LeftBar",
-
-  props: {
-    polygons: Array,
-  },
+  name: 'LeftBar',
 
   data: function () {
     return {
-      newPolygonJSON: ""
+      newPolygonJSON: ''
+    }
+  },
+
+  computed: {
+    ...mapState(['polygons', 'showGrid']),
+    ...mapGetters(['canUndo', 'canRedo']),
+    error () {
+      return Polygon.isErrorJson(this.newPolygonJSON)
+    },
+    allHidden () {
+      return this.polygons.length > 0 && this.polygons.filter(p => p.isVisible).length === 0
     }
   },
 
   methods: {
 
-    focus(poly) {
-      this.polygons.forEach(p => p.isFocus = false);
-      poly.isFocus = true;
+    ...mapMutations(['undo', 'redo', 'toggle_showGrid']),
+
+    itemStyle (poly) {
+      if (poly.isVisible) {
+        return {
+          backgroundColor: poly.color
+        }
+      } else {
+        return {
+          border: `3px solid ${poly.color}`
+        }
+      }
     },
 
-    addRandomPolygon() {
-      const newPolygon = Polygon.randomPolygon();
-      this.polygons.push(newPolygon);
-      this.focus(newPolygon);
+    focus (poly) {
+      if (!poly.isVisible) return
+      this.polygons.forEach(p => {
+        p.isFocus = false
+      })
+      poly.isFocus = true
     },
 
-    addPolygon() {
-      const newPolygon = new Polygon(this.newPolygonJSON);
-      this.polygons.push(newPolygon);
-      this.newPolygonJSON = "";
-      this.focus(newPolygon);
+    clickRandom () {
+      const newPolygon = Polygon.randomPolygon()
+      this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
+      this.focus(newPolygon)
     },
 
-    handleDelete(poly) {
-      this.$emit('update:polygons', this.polygons.filter(p => p.id !== poly.id))
+    clickAdd () {
+      const newPolygon = new Polygon(this.newPolygonJSON)
+      this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
+      this.newPolygonJSON = ''
+      this.focus(newPolygon)
     },
 
-    clearPolygons() {
-      this.$emit('update:polygons', [])
+    clickDelete (poly) {
+      this.$store.commit('update_polygons', this.polygons.filter(p => p.id !== poly.id))
     },
+
+    clickClear () {
+      this.$store.commit('update_polygons', [])
+    },
+
+    clickHide () {
+      const visible = this.allHidden
+      this.polygons.forEach(p => {
+        p.isVisible = visible
+      })
+    }
 
   }
-}
-
-function randomPolygon(offsetX, offsetY) {
-  return [{
-    x: Math.floor(Math.random() * 200) + offsetX,
-    y: -Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: -Math.floor(Math.random() * 200) + offsetX,
-    y: -Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: -Math.floor(Math.random() * 200) + offsetX,
-    y: Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: Math.floor(Math.random() * 200) + offsetX,
-    y: Math.floor(Math.random() * 200) + offsetY
-  }]
-}
-
-function randomColor() {
-  let r, g, b;
-  do {
-    r = Math.floor(Math.random() * 256);
-    g = Math.floor(Math.random() * 256);
-    b = Math.floor(Math.random() * 256);
-  } while (r + g + b < 100);
-  return `rgb(${r}, ${g}, ${b})`;
 }
 
 </script>
 
 <style scoped>
 
+button {
+  white-space: nowrap;
+}
+
 .left-bar {
   background-color: white;
-  height: 100%;
-  position: absolute;
-  box-shadow: 4px 0 6px black;
-  overflow-y: auto;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 300px;
+}
+
+.input-container {
+  margin: 10px 20px 0 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: baseline;
+}
+
+.input-container>input {
+  width: 80px;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.error-tip {
+  margin: 0 20px 0 20px;
+  min-height: 20px;
+  color: red;
+  font-size: 12px;
+}
+
+.item-container {
+  width: 100%;
+  overflow-y: auto;
+  box-shadow: 0 0 5px 5px #888888;
 }
 
 .item {
-  margin-top: 10px;
-  margin-left: 10px;
-  margin-right: 20px;
+  padding-left: 0 20px 0 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  height: 50px;
+  position: relative;
 }
 
-.invalid {
-  border-color: red;
-  border-style: solid;
+.item>input {
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  width: 80px;
+}
+
+.item>.highlight {
+  position: absolute;
+  right: 0;
+  height: 50px;
+  width: 10px;
+  background-color: yellow;
 }
 
 </style>

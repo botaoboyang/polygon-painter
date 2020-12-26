@@ -1,24 +1,19 @@
 <template>
   <div id="app">
-    <LeftBar :polygons.sync="polygons"/>
-    <Content :polygons="polygons"/>
+    <LeftBar/>
+    <Content/>
   </div>
 </template>
 
 <script>
-import LeftBar from "./LeftBar"
-import Content from "./Content"
+import LeftBar from './LeftBar'
+import Content from './Content'
 
 export default {
   components: {
     LeftBar,
-    Content,
-  }, 
-  data () {
-    return {
-      polygons: []
-    }
-  },
+    Content
+  }
 }
 </script>
 
@@ -27,5 +22,7 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
 }
 </style>
