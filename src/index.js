@@ -1,10 +1,13 @@
 import Vue from 'vue'
 import App from './components/App'
 import store from './store'
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
 
-window.onload = function () {
-  App.el = document.body
-  App.store = store
-  // eslint-disable-next-line no-new
-  new Vue(App)
-}
+Vue.use(ElementUI)
+
+window.App = new Vue({
+  el: document.body,
+  store,
+  render: h => h(App)
+})

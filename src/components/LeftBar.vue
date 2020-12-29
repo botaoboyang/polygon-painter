@@ -1,20 +1,16 @@
 <template>
   <div class="left-bar">
     <div class="input-container">
-      <input v-model="newPolygonJSON"/>
-      <button :disabled="error" @click="clickAdd">添加</button>
-      <button @click="clickRandom">随机</button>
-      <button @click="toggle_showGrid">网格</button>
-    </div>
-    <div class="error-tip">
-      <span v-show="newPolygonJSON.length>0">{{ error }}</span>
+      <el-input v-model="newPolygonJSON" placeholder="请输入" clearable>
+        <el-button type="primary" slot="append" icon="el-icon-plus" @click="clickAdd"></el-button>
+      </el-input>
     </div>
 
     <div class="button-container">
-      <button :disabled="!canUndo" @click="undo">&lt;=</button>
-      <button :disabled="!canRedo" @click="redo">=&gt;</button>
-      <button @click="clickClear">删除全部</button>
-      <button @click="clickHide">{{ allHidden ? '显示全部' : '隐藏全部' }}</button>
+      <el-button type="primary" circle plain icon="el-icon-back" @click="undo" :disabled="!canUndo"></el-button>
+      <el-button type="primary" circle plain icon="el-icon-right" @click="redo" :disabled="!canRedo"></el-button>
+      <el-button type="danger" circle icon="el-icon-delete" @click="clickClear"></el-button>
+      <el-button type="primary" circle icon="el-icon-view" @click="clickHide"></el-button>
     </div>
 
     <div class="item-container" v-show="polygons.length > 0">
@@ -91,6 +87,9 @@ export default {
     },
 
     clickAdd () {
+      if (this.newPolygonJSON === '') {
+        return
+      }
       const newPolygon = new Polygon(this.newPolygonJSON)
       this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
       this.newPolygonJSON = ''
@@ -139,16 +138,12 @@ button {
   align-items: baseline;
 }
 
-.input-container>input {
-  width: 80px;
-}
-
 .button-container {
+  margin: 10px 20px 0 20px;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   align-items: baseline;
-  margin-bottom: 10px;
 }
 
 .error-tip {

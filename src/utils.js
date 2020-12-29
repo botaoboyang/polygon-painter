@@ -19,7 +19,13 @@ function taggedTemplateMaker (parseFunction) {
   }
 }
 
+let id = 0
+function uuid () {
+  return id++
+}
+
 export {
   randomColor,
-  taggedTemplateMaker
+  taggedTemplateMaker,
+  uuid
 }

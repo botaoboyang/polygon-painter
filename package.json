@@ -36,6 +36,7 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "element-ui": "^2.14.1",
     "lodash": "^4.17.20",
     "vue": "^2.6.12",
     "vuex": "^3.6.0"

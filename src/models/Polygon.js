@@ -1,76 +1,28 @@
-import { randomColor } from '../utils'
-
-let currentId = 0
+import { uuid, randomColor } from '../utils'
 
 class Polygon {
-  static randomPolygon () {
-    const points = randomPolygon(
-      Math.floor(Math.random() * 400 - 200),
-      Math.floor(Math.random() * 400 - 200)
-    )
-    return new Polygon(points)
-  }
-
-  static isErrorJson (json) {
-    try {
-      const data = JSON.parse(json.toLowerCase())
-      return Polygon.isErrorData(data)
-    } catch (e) {
-      return '不符合JSON格式'
-    }
-  }
-
-  static isErrorData (data) {
-    if (Array.isArray(data)) {
-      for (const item of data) {
-        const err = Polygon.isErrorData(item)
-        if (err) return err
-      }
-    } else {
-      if (typeof (data.x) !== 'number' || typeof (data.y) !== 'number') {
-        return `${JSON.stringify(data)} 不符合格式`
-      }
-    }
-  }
+  id = uuid()
+  label
+  color = randomColor()
+  data = {}
+  isVisible = true
 
   constructor (data) {
-    if (typeof (data) === 'string') {
-      data = JSON.parse(data.toLowerCase())
-    }
     this.data = data
-    this.id = currentId++
-    this.name = `多边形${currentId}`
-    this.color = randomColor()
-    this.isVisible = true
-    this.isFocus = false
+    if (Array.isArray(data)) {
+      this.label = `Poly-${this.id}`
+    } else {
+      this.label = `Point-${this.id}`
+    }
   }
 
-  changeColor () {
-    this.color = randomColor()
+  changeColor (color = randomColor()) {
+    this.color = color
   }
 
-  toggleVisible () {
-    this.isVisible = !this.isVisible
+  toggleVisible (v = !this.isVisible) {
+    this.isVisible = v
   }
-}
-
-function randomPolygon (offsetX, offsetY) {
-  return [{
-    x: Math.floor(Math.random() * 200) + offsetX,
-    y: -Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: -Math.floor(Math.random() * 200) + offsetX,
-    y: -Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: -Math.floor(Math.random() * 200) + offsetX,
-    y: Math.floor(Math.random() * 200) + offsetY
-  },
-  {
-    x: Math.floor(Math.random() * 200) + offsetX,
-    y: Math.floor(Math.random() * 200) + offsetY
-  }]
 }
 
 export default Polygon
