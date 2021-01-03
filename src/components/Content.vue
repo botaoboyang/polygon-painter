@@ -10,7 +10,8 @@ const r = taggedTemplateMaker(v => v.toFixed(2))
 
 const MOVE_SPEED = 0.3
 
-const MIN_SCALE = 0.001
+const MIN_SCALE = 0.01
+const MAX_SCALE = 1000
 const SCALE_SPEED = 1.002
 
 const GRID_COLOR = '#eeeeee'
@@ -154,8 +155,17 @@ export default {
     },
 
     zoom (delta) {
-      const r = Math.pow(SCALE_SPEED, delta)
+      let r = Math.pow(SCALE_SPEED, delta)
+      const oldScale = this.scale
       this.scale *= r
+      if (this.scale < MIN_SCALE) {
+        this.scale = MIN_SCALE
+        r = this.scale / oldScale
+      } else if (this.scale > MAX_SCALE) {
+        this.scale = MAX_SCALE
+        r = this.scale / oldScale
+      }
+
       this.translateX += this.mouseX * (1 - r) / this.scale
       this.translateY += this.mouseY * (1 - r) / this.scale
     },
@@ -172,8 +182,6 @@ export default {
       if (this.controls.right) this.translateX -= MOVE_SPEED / this.scale * elapsed
       if (this.controls.zoomIn) this.zoom(elapsed)
       if (this.controls.zoomOut) this.zoom(-elapsed)
-
-      if (this.scale < MIN_SCALE) this.scale = MIN_SCALE
     },
 
     render (timestamp) {
@@ -183,7 +191,7 @@ export default {
       this.renderBackground()
       if (this.showStats) this.renderStats()
       if (this.showGrid) this.renderGrid()
-      this.renderPolygons()
+      this.renderData()
       window.requestAnimationFrame(this.render)
     },
 
@@ -227,23 +235,46 @@ export default {
       this.ctx.fillText(r`size: ${this.canvas.width / this.scale} * ${this.canvas.height / this.scale}`, 10, 110)
     },
 
-    renderPolygons () {
+    renderData () {
+      this.ctx.resetTransform()
       const visiblePolygons = this.polygons.filter(p => p.isVisible)
 
       for (const poly of visiblePolygons) {
         if (poly.isFocus) continue
-        this.renderPolygon(poly)
+        if (!Array.isArray(poly.data)) {
+          this.renderPoint(poly)
+        } else {
+          this.renderPolygon(poly)
+        }
+      }
+    },
+
+    renderPolygon (polygon) {
+      this.ctx.strokeStyle = polygon.color
+      this.ctx.lineWidth = 2
+      this.ctx.font = '16px serif'
+      this.ctx.fillStyle = 'white'
+
+      this.ctx.beginPath()
+
+      const data = []
+      for (const point of polygon.data) {
+        data.push(this.toCanvasCoords(point))
       }
 
-      const focusPolygon = visiblePolygons.find(p => p.isFocus)
-      if (focusPolygon) {
-        this.renderPolygon(focusPolygon)
-        this.renderText(focusPolygon)
+      this.ctx.moveTo(data[0].x, data[0].y)
+      for (let i = 1; i < data.length; i++) {
+        this.ctx.lineTo(data[i].x, data[i].y)
+      }
+      this.ctx.closePath()
+      this.ctx.stroke()
+
+      for (let i = 0; i < data.length; i++) {
+        this.ctx.fillText(i, data[i].x, data[i].y)
       }
     },
 
     renderPoint (point) {
-      this.ctx.resetTransform()
       const { x, y } = this.toCanvasCoords(point.data)
 
       this.ctx.fillStyle = point.color
@@ -253,58 +284,7 @@ export default {
 
       this.ctx.fillStyle = 'white'
       this.ctx.font = '16px serif'
-      this.ctx.fillText(point.name, x, y)
-    },
-
-    renderPolygon (polygon) {
-      if (!Array.isArray(polygon.data)) {
-        this.renderPoint(polygon)
-        return
-      }
-      this.ctx.setTransform(...this.transform)
-      this.ctx.strokeStyle = polygon.color
-      this.ctx.lineWidth = (polygon.isFocus ? 2 : 1) / this.scale
-      this.renderPolygonRec(polygon.data)
-    },
-
-    renderPolygonRec (polygon) {
-      if (Array.isArray(polygon[0])) {
-        for (const poly of polygon) {
-          this.renderPolygonRec(poly)
-        }
-        return
-      }
-
-      this.ctx.beginPath()
-
-      this.ctx.moveTo(polygon[0].x, polygon[0].y)
-      for (let i = 1; i < polygon.length; i++) {
-        this.ctx.lineTo(polygon[i].x, polygon[i].y)
-      }
-      this.ctx.closePath()
-
-      this.ctx.stroke()
-    },
-
-    renderText (polygon) {
-      this.ctx.resetTransform()
-      this.ctx.fillStyle = 'white'
-      this.ctx.font = '16px serif'
-      this.renderTextRec(polygon.data)
-    },
-
-    renderTextRec (polygon) {
-      if (Array.isArray(polygon[0])) {
-        for (const poly of polygon) {
-          this.renderTextRec(poly)
-        }
-        return
-      }
-
-      for (let i = 0; i < polygon.length; i++) {
-        const { x, y } = this.toCanvasCoords(polygon[i])
-        this.ctx.fillText(i, x, y)
-      }
+      this.ctx.fillText(point.label, x, y)
     }
 
   }

@@ -7,7 +7,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 Vue.use(ElementUI)
 
 window.App = new Vue({
-  el: document.body,
+  el: '#app',
   store,
   render: h => h(App)
 })

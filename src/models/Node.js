@@ -1,10 +1,12 @@
 import { uuid, randomColor } from '../utils'
 
 class Node {
-  id = uuid()
-  label = `Node-${this.id}`
-  children = []
-  isVisible = true
+  constructor () {
+    this.id = uuid()
+    this.label = `Node-${this.id}`
+    this.children = []
+    this.isVisible = true
+  }
 
   changeColor (color = randomColor()) {
     this.children.forEach(p => {

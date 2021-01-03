@@ -7,10 +7,15 @@
     </div>
 
     <div class="button-container">
-      <el-button type="primary" circle plain icon="el-icon-back" @click="undo" :disabled="!canUndo"></el-button>
-      <el-button type="primary" circle plain icon="el-icon-right" @click="redo" :disabled="!canRedo"></el-button>
-      <el-button type="danger" circle icon="el-icon-delete" @click="clickClear"></el-button>
-      <el-button type="primary" circle icon="el-icon-view" @click="clickHide"></el-button>
+      <el-button type="primary" @click="clickRandom">随机</el-button>
+      <el-button type="primary" @click="toggle_showGrid">网格</el-button>
+    </div>
+
+    <div class="button-container">
+      <el-button type="primary" plain icon="el-icon-back" @click="undo" :disabled="!canUndo"></el-button>
+      <el-button type="primary" plain icon="el-icon-right" @click="redo" :disabled="!canRedo"></el-button>
+      <el-button type="danger" icon="el-icon-delete" @click="clickClear"></el-button>
+      <el-button type="primary" icon="el-icon-view" @click="clickHide"></el-button>
     </div>
 
     <div class="item-container" v-show="polygons.length > 0">
@@ -19,13 +24,11 @@
         v-for="poly in polygons"
         :key="poly.id"
         :style="itemStyle(poly)"
-        @mouseenter="focus(poly)"
-        >
-        <input v-model="poly.name" />
+      >
+        <input v-model="poly.label" />
         <button @click="clickDelete(poly)">删除</button>
         <button @click="poly.changeColor()">换色</button>
         <button @click="poly.toggleVisible()">{{ poly.isVisible ? '隐藏' : '显示' }}</button>
-        <div v-if="poly.isFocus" class="highlight"></div>
       </div>
     </div>
   </div>
@@ -72,28 +75,20 @@ export default {
       }
     },
 
-    focus (poly) {
-      if (!poly.isVisible) return
-      this.polygons.forEach(p => {
-        p.isFocus = false
-      })
-      poly.isFocus = true
-    },
-
     clickRandom () {
       const newPolygon = Polygon.randomPolygon()
       this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
-      this.focus(newPolygon)
     },
 
     clickAdd () {
-      if (this.newPolygonJSON === '') {
-        return
+      try {
+        const data = JSON.parse(this.newPolygonJSON)
+        const newPolygon = new Polygon(data)
+        this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
+        this.newPolygonJSON = ''
+      } catch {
+        this.$message.error('添加失败，请检查数据')
       }
-      const newPolygon = new Polygon(this.newPolygonJSON)
-      this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
-      this.newPolygonJSON = ''
-      this.focus(newPolygon)
     },
 
     clickDelete (poly) {
@@ -139,7 +134,7 @@ button {
 }
 
 .button-container {
-  margin: 10px 20px 0 20px;
+  margin: 10px 20px 10px 20px;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
@@ -157,6 +152,7 @@ button {
   width: 100%;
   overflow-y: auto;
   box-shadow: 0 0 5px 5px #888888;
+  margin-top: 10px;
 }
 
 .item {
@@ -174,14 +170,6 @@ button {
   border: none;
   background-color: rgba(0, 0, 0, 0);
   width: 80px;
-}
-
-.item>.highlight {
-  position: absolute;
-  right: 0;
-  height: 50px;
-  width: 10px;
-  background-color: yellow;
 }
 
 </style>

@@ -1,13 +1,11 @@
 import { uuid, randomColor } from '../utils'
 
 class Polygon {
-  id = uuid()
-  label
-  color = randomColor()
-  data = {}
-  isVisible = true
-
   constructor (data) {
+    this.id = uuid()
+    this.color = randomColor()
+    this.isVisible = true
+
     this.data = data
     if (Array.isArray(data)) {
       this.label = `Poly-${this.id}`
@@ -22,6 +20,16 @@ class Polygon {
 
   toggleVisible (v = !this.isVisible) {
     this.isVisible = v
+  }
+
+  static randomPolygon () {
+    const data = [
+      { x: Math.random() * 1000, y: Math.random() * 1000 },
+      { x: Math.random() * 1000, y: -Math.random() * 1000 },
+      { x: -Math.random() * 1000, y: -Math.random() * 1000 },
+      { x: -Math.random() * 1000, y: Math.random() * 1000 }
+    ]
+    return new Polygon(data)
   }
 }
 
