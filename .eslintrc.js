@@ -17,5 +17,11 @@ module.exports = {
     'vue'
   ],
   rules: {
+    camelcase: [
+      'error',
+      {
+        properties: 'always'
+      }
+    ]
   }
 }
