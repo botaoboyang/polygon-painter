@@ -8,7 +8,7 @@
 
     <div class="button-container">
       <el-button type="primary" @click="clickRandom">随机</el-button>
-      <el-button type="primary" @click="toggle_showGrid">网格</el-button>
+      <el-button type="primary" @click="toggleShowGrid">网格</el-button>
     </div>
 
     <div class="button-container">
@@ -61,7 +61,7 @@ export default {
 
   methods: {
 
-    ...mapMutations(['undo', 'redo', 'toggle_showGrid']),
+    ...mapMutations(['undo', 'redo', 'toggleShowGrid']),
 
     itemStyle (poly) {
       if (poly.isVisible) {
@@ -77,14 +77,14 @@ export default {
 
     clickRandom () {
       const newPolygon = Polygon.randomPolygon()
-      this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
+      this.$store.commit('updatePolygons', [newPolygon, ...this.polygons])
     },
 
     clickAdd () {
       try {
         const data = JSON.parse(this.newPolygonJSON)
         const newPolygon = new Polygon(data)
-        this.$store.commit('update_polygons', [newPolygon, ...this.polygons])
+        this.$store.commit('updatePolygons', [newPolygon, ...this.polygons])
         this.newPolygonJSON = ''
       } catch {
         this.$message.error('添加失败，请检查数据')
@@ -92,11 +92,11 @@ export default {
     },
 
     clickDelete (poly) {
-      this.$store.commit('update_polygons', this.polygons.filter(p => p.id !== poly.id))
+      this.$store.commit('updatePolygons', this.polygons.filter(p => p.id !== poly.id))
     },
 
     clickClear () {
-      this.$store.commit('update_polygons', [])
+      this.$store.commit('updatePolygons', [])
     },
 
     clickHide () {
